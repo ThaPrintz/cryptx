@@ -1,0 +1,2 @@
+#define CRYPTX_API __declspec(dllexport)
+#define CRYPTX_API __declspec(dllimport)
