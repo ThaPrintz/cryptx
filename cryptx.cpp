@@ -252,51 +252,179 @@ byte* cryptx::RipeMDx::getDigest()
 	return this->digest;
 }
 
+/******************
+HMAC
+******************/
+void* cryptx::HMACx::Hash(CRYPTX_CRYPTO_METHOD type)
+{
+	if (type == HASH_MD5)
+	{
+		ZeroMemory(this->md5digest, CRYPTX_MD5_DIGEST);
+
+		wc_HmacSetKey(&this->hmac, MD5, this->key, sizeof(this->key));
+		wc_HmacUpdate(&this->hmac, this->buffer, strlen((const char*)this->buffer));
+		wc_HmacFinal(&this->hmac, md5digest);
+	} else if (type == HASH_SHA)
+	{
+		ZeroMemory(this->shadigest, CRYPTX_SHA_DIGEST);
+
+		wc_HmacSetKey(&this->hmac, SHA, this->key, sizeof(this->key));
+		wc_HmacUpdate(&this->hmac, this->buffer, strlen((const char*)this->buffer));
+		wc_HmacFinal(&this->hmac, shadigest);
+	} else if (type == HASH_SHA256)
+	{
+		ZeroMemory(this->sha256digest, CRYPTX_SHA256_DIGEST);
+
+		wc_HmacSetKey(&this->hmac, SHA256, this->key, sizeof(this->key));
+		wc_HmacUpdate(&this->hmac, this->buffer, strlen((const char*)this->buffer));
+		wc_HmacFinal(&this->hmac, sha256digest);
+	} else if (type == HASH_SHA384)
+	{
+		ZeroMemory(this->sha384digest, CRYPTX_SHA384_DIGEST);
+
+		wc_HmacSetKey(&this->hmac, SHA384, this->key, sizeof(this->key));
+		wc_HmacUpdate(&this->hmac, this->buffer, strlen((const char*)this->buffer));
+		wc_HmacFinal(&this->hmac, sha384digest);
+	} else if (type == HASH_SHA512)
+	{
+		ZeroMemory(this->sha512digest, CRYPTX_SHA512_DIGEST);
+
+		wc_HmacSetKey(&this->hmac, SHA512, this->key, sizeof(this->key));
+		wc_HmacUpdate(&this->hmac, this->buffer, strlen((const char*)this->buffer));
+		wc_HmacFinal(&this->hmac, sha512digest);
+	}
+
+	return nullptr;
+}
+
+void* cryptx::HMACx::SetKey(const byte nkey[], int keysz)
+{
+	return memcpy(this->key, nkey, keysz);
+}
+
+void* cryptx::HMACx::UpdateBuffer(const byte data[], int datasz)
+{
+	return memcpy(this->buffer, data, datasz);
+}
+
+byte* cryptx::HMACx::getDigest(CRYPTX_CRYPTO_METHOD type)
+{
+	if (type == HASH_MD5)
+	{
+		return this->md5digest;
+	} else if (type == HASH_SHA)
+	{
+		return this->shadigest;
+	} else if (type == HASH_SHA256)
+	{
+		return this->sha256digest;
+	} else if (type == HASH_SHA384)
+	{
+		return this->sha384digest;
+	} else if (type == HASH_SHA512)
+	{
+		return this->sha512digest;
+	}
+}
+
+/******************
+GMAC
+******************/
+void* cryptx::GMACx::Hash()
+{
+	wc_GmacSetKey(&this->gmac, this->key, sizeof(this->key));
+	wc_GmacUpdate(&this->gmac, this->iv, sizeof(this->iv), this->buffer, strlen((const char*)this->buffer), digest, sizeof(digest));
+
+	return nullptr;
+}
+
+void* cryptx::GMACx::SetKey(const byte nkey[], int keysz)
+{
+	return memcpy(this->key, nkey, keysz);
+}
+
+void* cryptx::GMACx::SetIV(const byte niv[], int ivsz)
+{
+	return memcpy(this->iv, niv, ivsz);
+}
+
+void* cryptx::GMACx::UpdateBuffer(const byte data[], int datasz)
+{
+	return memcpy(this->buffer, data, datasz);
+}
+
+byte* cryptx::GMACx::getDigest()
+{
+	return this->digest;
+}
+
+/******************
+Poly1305
+******************/
+void* cryptx::Poly1305x::Hash()
+{
+	wc_Poly1305SetKey(&this->poly, this->key, sizeof(this->key));
+	wc_Poly1305Update(&this->poly, this->buffer, strlen((const char*)this->buffer));
+	wc_Poly1305Final(&this->poly, digest);
+
+	return nullptr;
+}
+
+void* cryptx::Poly1305x::SetKey(const byte nkey[], int keysz)
+{
+	return memcpy(this->key, nkey, keysz);
+}
+
+
+void* cryptx::Poly1305x::UpdateBuffer(const byte data[], int datasz)
+{
+	return memcpy(this->buffer, data, datasz);
+}
+
+byte* cryptx::Poly1305x::getDigest()
+{
+	return this->digest;
+}
 
 void* cryptx::FormCryptoAgent(CRYPTX_CRYPTO_METHOD x)
 {
-	if (x == HASH_MD4) {
+	if (x == HASH_MD4)
+	{
 		this->md4cat = new cryptx::MD4x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_MD2) {
+	} else if (x == HASH_MD2)
+	{
 		this->md2cat = new cryptx::MD2x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_MD5) {
+	} else if (x == HASH_MD5)
+	{
 		this->md5cat = new cryptx::MD5x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_SHA) {
+	} else if (x == HASH_SHA)
+	{
 		this->shacat = new cryptx::SHAx(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_SHA256) {
+	} else if (x == HASH_SHA256)
+	{
 		this->sha256cat = new cryptx::SHA256x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_SHA384) {
+	} else if (x == HASH_SHA384)
+	{
 		this->sha384cat = new cryptx::SHA384x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_SHA512) {
+	} else if (x == HASH_SHA512)
+	{
 		this->sha512cat = new cryptx::SHA512x(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_BLAKE2B) {
+	} else if (x == HASH_BLAKE2B)
+	{
 		this->blake2bcat = new cryptx::Blake2Bx(this->buffer, strlen((const char*)this->buffer));
-	}
-	else if (x == HASH_RIPEMD) {
+	} else if (x == HASH_RIPEMD)
+	{
 		this->ripemdcat = new cryptx::RipeMDx(this->buffer, strlen((const char*)this->buffer));
+	} else if (x == KEY_HASH_HMAC)
+	{
+		this->hmaccat = new cryptx::HMACx(this->buffer, strlen((const char*)this->buffer));
+	} else if (x == KEY_HASH_GMAC)
+	{
+		this->gmaccat = new cryptx::GMACx(this->buffer, strlen((const char*)this->buffer));
+	} else if (x == KEY_HASH_POLY1305)
+	{
+		this->polycat = new cryptx::Poly1305x(this->buffer, strlen((const char*)this->buffer));
 	}
-	//else if (x == KEY_HASH_HMAC) {
-		//return (void*)new cryptx::HMACx(this->buffer, strlen((const char*)this->buffer));
-	//}
-	//else if (x == KEY_HASH_HMAC_SHA256) {
-	//}
-	//else if (x == KEY_HASH_HMAC_SHA384) {
-	//}
-	//else if (x == KEY_HASH_HMAC_SHA512) {
-	//}
-	//else if (x == KEY_HASH_HMAC_MD5) {
-	//}
-	//else if (x == KEY_HASH_GMAC) {
-	//}
-	//else if (x == KEY_HASH_POLY1305) {
-	//}
 	//else if (x == BLOCK_CIPHER_AES128) {
 	//}
 	//else if (x == BLOCK_CIPHER_AES192) {
@@ -321,34 +449,70 @@ void* cryptx::FormCryptoAgent(CRYPTX_CRYPTO_METHOD x)
 	return nullptr;
 }
 
+void* cryptx::SetKey(CRYPTX_CRYPTO_METHOD x, const byte key[], int keysz)
+{
+	if (x == KEY_HASH_HMAC)
+	{
+		return this->hmaccat->SetKey(key, keysz);
+	} else if (x == KEY_HASH_GMAC)
+	{
+		return this->gmaccat->SetKey(key, keysz);
+	} else if (x == KEY_HASH_POLY1305)
+	{
+		return this->polycat->SetKey(key, keysz);
+	}
+
+	return nullptr;
+}
+
+void* cryptx::SetIV(CRYPTX_CRYPTO_METHOD x, const byte key[], int keysz)
+{
+	if (x == KEY_HASH_GMAC)
+	{
+		return this->gmaccat->SetIV(key, keysz);
+	}
+
+	return nullptr;
+}
+
 void* cryptx::UpdateBuffer(CRYPTX_CRYPTO_METHOD x, const byte data[], int datasz)
 {
-	if (x == HASH_MD4) {
+	if (x == HASH_MD4)
+	{
 		return this->md4cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_MD2) {
+	} else if (x == HASH_MD2)
+	{
 		return this->md2cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_MD5) {
+	} else if (x == HASH_MD5)
+	{
 		return this->md5cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_SHA) {
+	} else if (x == HASH_SHA)
+	{
 		return this->shacat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_SHA256) {
+	} else if (x == HASH_SHA256)
+	{
 		return this->sha256cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_SHA384) {
+	} else if (x == HASH_SHA384)
+	{
 		return this->sha384cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_SHA512) {
+	} else if (x == HASH_SHA512)
+	{
 		return this->sha512cat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_BLAKE2B) {
+	} else if (x == HASH_BLAKE2B)
+	{
 		return this->blake2bcat->UpdateBuffer(data, datasz);
-	}
-	else if (x == HASH_RIPEMD) {
+	} else if (x == HASH_RIPEMD)
+	{
 		return this->ripemdcat->UpdateBuffer(data, datasz);
+	} else if (x == KEY_HASH_HMAC)
+	{
+		return this->hmaccat->UpdateBuffer(data, datasz);
+	} else if (x == KEY_HASH_GMAC)
+	{
+		return this->gmaccat->UpdateBuffer(data, datasz);
+	} else if (x == KEY_HASH_POLY1305)
+	{
+		return this->polycat->UpdateBuffer(data, datasz);
 	}
 
 	return nullptr;
@@ -356,32 +520,54 @@ void* cryptx::UpdateBuffer(CRYPTX_CRYPTO_METHOD x, const byte data[], int datasz
 
 void* cryptx::Hash(CRYPTX_CRYPTO_METHOD x)
 {
-	if (x == HASH_MD4) {
+	if (x == HASH_MD4)
+	{
 		return this->md4cat->Hash();
-	}
-	else if (x == HASH_MD2) {
+	} else if (x == HASH_MD2)
+	{
 		return this->md2cat->Hash();
-	}
-	else if (x == HASH_MD5) {
+	} else if (x == HASH_MD5)
+	{
 		return this->md5cat->Hash();
-	}
-	else if (x == HASH_SHA) {
+	} else if (x == HASH_SHA)
+	{
 		return this->shacat->Hash();
-	}
-	else if (x == HASH_SHA256) {
+	} else if (x == HASH_SHA256)
+	{
 		return this->sha256cat->Hash();
-	}
-	else if (x == HASH_SHA384) {
+	} else if (x == HASH_SHA384)
+	{
 		return this->sha384cat->Hash();
-	}
-	else if (x == HASH_SHA512) {
+	} else if (x == HASH_SHA512)
+	{
 		return this->sha512cat->Hash();
-	}
-	else if (x == HASH_BLAKE2B) {
+	} else if (x == HASH_BLAKE2B)
+	{
 		return this->blake2bcat->Hash();
-	}
-	else if (x == HASH_RIPEMD) {
+	} else if (x == HASH_RIPEMD)
+	{
 		return this->ripemdcat->Hash();
+	} else if (x == KEY_HASH_HMACMD5)
+	{
+		return this->hmaccat->Hash(HASH_MD5);
+	} else if (x == KEY_HASH_HMACSHA)
+	{
+		return this->hmaccat->Hash(HASH_SHA);
+	} else if (x == KEY_HASH_HMACSHA256)
+	{
+		return this->hmaccat->Hash(HASH_SHA256);
+	} else if (x == KEY_HASH_HMACSHA384)
+	{
+		return this->hmaccat->Hash(HASH_SHA384);
+	} else if (x == KEY_HASH_HMACSHA512)
+	{
+		return this->hmaccat->Hash(HASH_SHA512);
+	} else if (x == KEY_HASH_GMAC)
+	{
+		return this->gmaccat->Hash();
+	} else if (x == KEY_HASH_POLY1305)
+	{
+		return this->polycat->Hash();
 	}
 
 	return nullptr;
@@ -389,33 +575,56 @@ void* cryptx::Hash(CRYPTX_CRYPTO_METHOD x)
 
 byte* cryptx::getDigest(CRYPTX_CRYPTO_METHOD x)
 {
-	if (x == HASH_MD4) {
+	if (x == HASH_MD4)
+	{
 		return this->md4cat->getDigest();
-	}
-	else if (x == HASH_MD2) {
+	} else if (x == HASH_MD2)
+	{
 		return this->md2cat->getDigest();
-	}
-	else if (x == HASH_MD5) {
+	} else if (x == HASH_MD5)
+	{
 		return this->md5cat->getDigest();
-	}
-	else if (x == HASH_SHA) {
+	} else if (x == HASH_SHA)
+	{
 		return this->shacat->getDigest();
-	}
-	else if (x == HASH_SHA256) {
+	} else if (x == HASH_SHA256)
+	{
 		return this->sha256cat->getDigest();
-	}
-	else if (x == HASH_SHA384) {
+	} else if (x == HASH_SHA384)
+	{
 		return this->sha384cat->getDigest();
-	}
-	else if (x == HASH_SHA512) {
+	} else if (x == HASH_SHA512)
+	{
 		return this->sha512cat->getDigest();
-	}
-	else if (x == HASH_BLAKE2B) {
+	} else if (x == HASH_BLAKE2B)
+	{
 		return this->blake2bcat->getDigest();
-	}
-	else if (x == HASH_RIPEMD) {
+	} else if (x == HASH_RIPEMD)
+	{
 		return this->ripemdcat->getDigest();
+	} else if (x == KEY_HASH_HMACMD5)
+	{
+		return this->hmaccat->getDigest(HASH_MD5);
+	} else if (x == KEY_HASH_HMACSHA)
+	{
+		return this->hmaccat->getDigest(HASH_SHA);
+	} else if (x == KEY_HASH_HMACSHA256)
+	{
+		return this->hmaccat->getDigest(HASH_SHA256);
+	} else if (x == KEY_HASH_HMACSHA384)
+	{
+		return this->hmaccat->getDigest(HASH_SHA384);
+	} else if (x == KEY_HASH_HMACSHA512)
+	{
+		return this->hmaccat->getDigest(HASH_SHA512);
+	} else if (x == KEY_HASH_GMAC)
+	{
+		return this->gmaccat->getDigest();
+	} else if (x == KEY_HASH_POLY1305)
+	{
+		return this->polycat->getDigest();
 	}
+
 
 	return nullptr;
 }
